@@ -66,15 +66,21 @@ const parseCSV = (file) => {
   };
   reader.readAsText(file, "WINDOWS-1251");
   hotSettings.minSpareRows = 0;
-  if (hotCSV.value!==null) 
-  hotCSV.value.hotInstance.updateSettings(hotSettings);
+
+  if (hotCSV.value!==null)
+  {
+    hotCSV.value.hotInstance.updateSettings(hotSettings);
+    hotCSV.value.hotInstance.updateData(csvData);
+  }
+
+
 };
 
 const saveCSV = ()=> {
   const exportData = hasHeaders.value
         ? [hotSettings.columns.map((col) => col.title), ...csvData.value]
         : csvData.value;
-  
+
         console.log(exportData);
         console.log(csvData.value);
      const ws = XLSX.utils.json_to_sheet(exportData);
@@ -90,15 +96,42 @@ const saveCSV = ()=> {
 
 </script>
 <template>
-  <div>
+   <div class="container">
     <input type="file" @change="handleFileChange" />
     <label> <input type="checkbox" @change="onHandleCheckBoxHasHeaderChange" v-model="hasHeaders" /> У файла есть заголовки </label>
+    <div class="row">
     <hot-table
-      ref="hotXLS"
+      ref="hotCSV"
       :data="csvData"
       :settings="hotSettings"
       v-if="csvData.length > 0"
     ></hot-table>
+    </div>
     <button @click="saveCSV">Сохранить в CSV</button>
   </div>
 </template>
+<style>
+  .container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .file-input {
+    width: 100%;
+  }
+
+  .row {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .col-100px {
+    width: 100px;
+  }
+
+  .col {
+    flex: 1;
+  }
+</style>
