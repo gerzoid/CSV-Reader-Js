@@ -2,14 +2,13 @@
 import * as XLSX from "xlsx";
 import { HotTable } from "@handsontable/vue3";
 import { registerAllModules } from "handsontable/registry";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import * as chardet from "chardet";
 import "handsontable/dist/handsontable.full.min.css";
 
-
 registerAllModules();
 
-var csvData = ref([]);
+var csvData = ref([1]);
 var hotCSV = ref(null);
 var selectedEncoding = ref("Windows-1251");
 var detectedEncoding = "";
@@ -17,17 +16,20 @@ var hasHeaders = ref(true);
 var useAutoDetectEncoding = ref(true);
 var currentFile = null;
 
+onMounted(()=>{
+});
+
 var hotSettings = {
   data: [],
   licenseKey: "non-commercial-and-evaluation",
   colHeaders: true,
   rowHeaders: true,
-  stretchH: "all",
+  manualColumnResize: true,
   renderAllRows: false,
-  minSpareRows: 10,
+  minSpareRows: 2,
   minSpareCols: 10,
   contextMenu: true,
-  columns: [],
+  columns: [{title:'Column1'},{title:'Column2'},{title:'Column3'},{title:'Column4'}],
 };
 
 const handleFileChange = (event) => {
@@ -43,6 +45,7 @@ const onHandleCheckBoxHasHeaderChange = () => {
 };
 
 const parseCSV = async (file) => {
+  console.log('parseCSV');
   if (file==null)
   return;
   const buffer = await readFileAsync(file);
@@ -86,6 +89,7 @@ const parseCSV = async (file) => {
 };
 
 const readFileAsync = (file) => {
+  console.log('readfileAsync');
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -123,7 +127,8 @@ const saveCSV = () => {
 </script>
 <template>
   <div class="container">
-    <input type="file" @change="handleFileChange" />
+    <input  type="file" @change="handleFileChange" />
+    <div class="row">
     <label>
       <input
         type="checkbox"
@@ -150,6 +155,7 @@ const saveCSV = () => {
         <option value="CP1252">CP1252</option>
       </select>
     </div>
+  </div>
     <div class="row">
       <hot-table
         ref="hotCSV"
@@ -158,7 +164,7 @@ const saveCSV = () => {
         v-if="csvData.length > 0"
       ></hot-table>
     </div>
-    <button @click="saveCSV">Сохранить в CSV</button>
+    <button class='buttons' @click="saveCSV">Сохранить в CSV</button>
   </div>
 </template>
 <style>

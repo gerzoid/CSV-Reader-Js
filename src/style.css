@@ -4,7 +4,7 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
+  color: gainsboro;
   background-color: #5a8e95;
 
   font-synthesis: none;
@@ -26,25 +26,39 @@ a:hover {
 
 }
 
+select{
+    background-color: #302f2f;
+    color:gainsboro;    
+    padding: 3px;
+    margin: 2px;
+}
+select:disabled{
+  color:#828282;
+}
+.buttons  {
+  background-color: #302f2f;
+  color: gainsboro;
+}
+
+
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #656666;
+    color: gainsboro;
+    background-color: #39484a
   }
   a:hover {
     color: #747bff;
   }
-  .buttons  {
-    background-color: #000000;
-    color: #e9e7e7;
-  }
   .handsontable{
     color: #000000 !important;
   }
+  .handsontable th {
+    background-color: #dddddd !important;
+  }
   .handsontable td {
-    background-color: #bbb !important;
-    border-right: 1px solid #e7dfdf !important;
-    border-bottom: 1px solid #e7dfdf !important;
+    background-color:  #f4f6fa !important;
+    border-right: 1px solid #bcbcbc !important;
+    border-bottom: 1px solid #bcbcbc !important;
   }
 
 }
