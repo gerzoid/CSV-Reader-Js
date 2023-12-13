@@ -5,7 +5,7 @@
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #5a8e95;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -23,21 +23,28 @@ a:hover {
 }
 
 #app {
-/*  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;*/
+
 }
 
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    background-color: #ffffff;
+    background-color: #656666;
   }
   a:hover {
     color: #747bff;
   }
-  button {
-    background-color: #f9f9f9;
+  .buttons  {
+    background-color: #000000;
+    color: #e9e7e7;
   }
+  .handsontable{
+    color: #000000 !important;
+  }
+  .handsontable td {
+    background-color: #bbb !important;
+    border-right: 1px solid #e7dfdf !important;
+    border-bottom: 1px solid #e7dfdf !important;
+  }
+
 }
