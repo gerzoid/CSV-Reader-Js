@@ -21,6 +21,8 @@ onMounted(()=>{
 
 var hotSettings = {
   licenseKey: "non-commercial-and-evaluation",
+  width: "100%",
+  height: "100%",
   colHeaders: true,
   rowHeaders: true,
   manualColumnResize: true,
@@ -157,7 +159,7 @@ const saveCSV = () => {
       </select>
     </div>
   </div>
-    <div class="row">
+      <div class="table">
       <hot-table
         ref="hotCSV"
         :data="csvData"
@@ -188,7 +190,6 @@ const saveCSV = () => {
 .col-100px {
   width: 100px;
 }
-
 .col {
   flex: 1;
 }
