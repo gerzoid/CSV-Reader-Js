@@ -8,7 +8,7 @@ import "handsontable/dist/handsontable.full.min.css";
 
 registerAllModules();
 
-var csvData = ref([1]);
+var csvData = ref([{}]);
 var hotCSV = ref(null);
 var selectedEncoding = ref("Windows-1251");
 var detectedEncoding = "";
@@ -20,16 +20,15 @@ onMounted(()=>{
 });
 
 var hotSettings = {
-  data: [],
   licenseKey: "non-commercial-and-evaluation",
   colHeaders: true,
   rowHeaders: true,
   manualColumnResize: true,
   renderAllRows: false,
-  minSpareRows: 2,
-  minSpareCols: 10,
+  minRows: 10,
+  startRows:10,
   contextMenu: true,
-  columns: [{title:'Column1'},{title:'Column2'},{title:'Column3'},{title:'Column4'}],
+  columns: [{title:'Колонка 1'},{title:'Колонка 2'},{title:'Колонка 3'},{title:'Колонка 4'}],
 };
 
 const handleFileChange = (event) => {
@@ -53,7 +52,6 @@ const parseCSV = async (file) => {
   detectedEncoding = chardet.detect(buffer);
   // Выбор кодировки: автоматически или пользовательский выбор
   const selectedEncoding2 =  useAutoDetectEncoding.value ? detectedEncoding: selectedEncoding.value;
-  console.log(useAutoDetectEncoding.value);
   // Преобразование данных с использованием выбранной кодировки
   const text = new TextDecoder(selectedEncoding2).decode(buffer);
 
@@ -108,6 +106,9 @@ const readFileAsync = (file) => {
 };
 
 const saveCSV = () => {
+  console.log(csvData);
+  return;
+  
   const exportData = hasHeaders.value
     ? [hotSettings.columns.map((col) => col.title), ...csvData.value]
     : csvData.value;
@@ -164,7 +165,7 @@ const saveCSV = () => {
         v-if="csvData.length > 0"
       ></hot-table>
     </div>
-    <button class='buttons' @click="saveCSV">Сохранить в CSV</button>
+    <button class='buttons col-100px' @click="saveCSV">Сохранить в CSV</button>
   </div>
 </template>
 <style>
