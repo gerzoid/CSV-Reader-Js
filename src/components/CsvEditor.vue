@@ -1,6 +1,7 @@
 <script setup>
 import * as XLSX from "xlsx";
 import { HotTable } from "@handsontable/vue3";
+import { ContextMenu } from 'handsontable/plugins/contextMenu';
 import { registerAllModules } from "handsontable/registry";
 import { ref, onMounted } from "vue";
 import * as chardet from "chardet";
@@ -8,7 +9,7 @@ import "handsontable/dist/handsontable.full.min.css";
 
 registerAllModules();
 
-var csvData = ref([{}]);
+var csvData = ref([[null, null,null,null]]);
 var hotCSV = ref(null);
 var selectedEncoding = ref("Windows-1251");
 var detectedEncoding = "";
@@ -16,21 +17,53 @@ var hasHeaders = ref(true);
 var useAutoDetectEncoding = ref(true);
 var currentFile = null;
 
-onMounted(()=>{
-});
+onMounted(() => {});
 
 var hotSettings = {
   licenseKey: "non-commercial-and-evaluation",
   width: "100%",
   height: "100%",
+  allowInsertColumn: true,
   colHeaders: true,
   rowHeaders: true,
   manualColumnResize: true,
+  manualColumnMove: true, // Активация возможности перемещения колонок  
   renderAllRows: false,
   minRows: 10,
-  startRows:10,
-  contextMenu: true,
-  columns: [{title:'Колонка 1'},{title:'Колонка 2'},{title:'Колонка 3'},{title:'Колонка 4'}],
+  startRows: 10,
+  columns: [
+    { title: "Колонка 1" },
+    { title: "Колонка 2" },
+    { title: "Колонка 3" },
+    { title: "Колонка 4" },
+  ],
+  contextMenu: {
+    items: {
+      col_left: {
+        name: "Вставить столбец (перед)",
+        disabled: false,
+        callback(key, selection, clickEvent){
+          csvData.value.forEach(function (row, rowIndex) {
+            row.splice(selection[0].start.col, 0, null);
+          });
+          hotSettings.columns.splice(selection[0].start.col,0,null);
+  }
+      },
+      row_above: {
+        name: "Вставить строку (перед)",
+      },
+      row_below: {
+        name: "Вставить строку (после)",
+      },
+      separator: ContextMenu.SEPARATOR,
+      clear_custom: {
+        name: "Очистить таблицу",
+        callback() {
+          this.clear();
+        },
+      },
+    },
+  },
 };
 
 const handleFileChange = (event) => {
@@ -46,14 +79,15 @@ const onHandleCheckBoxHasHeaderChange = () => {
 };
 
 const parseCSV = async (file) => {
-  console.log('parseCSV');
-  if (file==null)
-  return;
+  console.log("parseCSV");
+  if (file == null) return;
   const buffer = await readFileAsync(file);
   // Автоматическое определение кодировки
   detectedEncoding = chardet.detect(buffer);
   // Выбор кодировки: автоматически или пользовательский выбор
-  const selectedEncoding2 =  useAutoDetectEncoding.value ? detectedEncoding: selectedEncoding.value;
+  const selectedEncoding2 = useAutoDetectEncoding.value
+    ? detectedEncoding
+    : selectedEncoding.value;
   // Преобразование данных с использованием выбранной кодировки
   const text = new TextDecoder(selectedEncoding2).decode(buffer);
 
@@ -65,16 +99,15 @@ const parseCSV = async (file) => {
   const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
   csvData.value = jsonData.reduce((acc, row, index) => {
-    if (hasHeaders.value && index === 0) {
-      return acc; // Пропускаем первую строку при включенном чекбоксе
-    }
-    const obj = {};
-    Object.keys(row).forEach((key) => {
-      obj[key] = row[key];
-    });
-    acc.push(obj);
-    return acc;
-  }, []);
+  if (hasHeaders.value && index === 0) {
+    return acc; // Пропускаем первую строку при включенном чекбоксе
+  }
+  const valuesArray = Object.values(row);
+  acc.push(valuesArray);
+  return acc;
+}, []);
+
+
   // Обновляем колонки в hotSettings
   hotSettings.columns = jsonData[0].map((header, index) => ({
     data: index,
@@ -89,7 +122,7 @@ const parseCSV = async (file) => {
 };
 
 const readFileAsync = (file) => {
-  console.log('readfileAsync');
+  console.log("readfileAsync");
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -110,7 +143,7 @@ const readFileAsync = (file) => {
 const saveCSV = () => {
   console.log(csvData);
   return;
-  
+
   const exportData = hasHeaders.value
     ? [hotSettings.columns.map((col) => col.title), ...csvData.value]
     : csvData.value;
@@ -130,36 +163,40 @@ const saveCSV = () => {
 </script>
 <template>
   <div class="container">
-    <input  type="file" @change="handleFileChange" />
+    <input type="file" @change="handleFileChange" />
     <div class="row">
-    <label>
-      <input
-        type="checkbox"
-        @change="onHandleCheckBoxHasHeaderChange"
-        v-model="hasHeaders"
-      />
-      У файла есть заголовки
-    </label>
-    <label>
-      <input
-        type="checkbox"
-        @change="onHandleCheckBoxHasHeaderChange"
-        v-model="useAutoDetectEncoding"
-      />
-      Автоопределение кодировки
-    </label>
-    <div class="col-100px">
-      <select :disabled="useAutoDetectEncoding" v-model="selectedEncoding" @change="onHandleCheckBoxHasHeaderChange">
-        <option value="UTF-8">UTF-8</option>
-        <option value="UTF-16">UTF-16</option>
-        <option value="ISO-8859-1">ISO-8859-1</option>
-        <option value="Windows-1251">Windows-1251</option>
-        <option value="KOI8-R">KOI8-R</option>
-        <option value="CP1252">CP1252</option>
-      </select>
+      <label>
+        <input
+          type="checkbox"
+          @change="onHandleCheckBoxHasHeaderChange"
+          v-model="hasHeaders"
+        />
+        У файла есть заголовки
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          @change="onHandleCheckBoxHasHeaderChange"
+          v-model="useAutoDetectEncoding"
+        />
+        Автоопределение кодировки
+      </label>
+      <div class="col-100px">
+        <select
+          :disabled="useAutoDetectEncoding"
+          v-model="selectedEncoding"
+          @change="onHandleCheckBoxHasHeaderChange"
+        >
+          <option value="UTF-8">UTF-8</option>
+          <option value="UTF-16">UTF-16</option>
+          <option value="ISO-8859-1">ISO-8859-1</option>
+          <option value="Windows-1251">Windows-1251</option>
+          <option value="KOI8-R">KOI8-R</option>
+          <option value="CP1252">CP1252</option>
+        </select>
+      </div>
     </div>
-  </div>
-      <div class="table">
+    <div class="table">
       <hot-table
         ref="hotCSV"
         :data="csvData"
@@ -167,7 +204,7 @@ const saveCSV = () => {
         v-if="csvData.length > 0"
       ></hot-table>
     </div>
-    <button class='buttons col-100px' @click="saveCSV">Сохранить в CSV</button>
+    <button class="buttons col-100px" @click="saveCSV">Сохранить в CSV</button>
   </div>
 </template>
 <style>
