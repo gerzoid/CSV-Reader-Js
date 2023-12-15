@@ -6,16 +6,15 @@ import { registerAllModules } from "handsontable/registry";
 import { ref, onMounted } from "vue";
 import * as chardet from "chardet";
 import "handsontable/dist/handsontable.full.min.css";
+import {useSettingsStore} from "../stores/settingsStore";
+
+
+const settingsStore = useSettingsStore();
 
 registerAllModules();
 
 var csvData = ref([[null, null,null,null]]);
 var hotCSV = ref(null);
-var selectedEncoding = ref("Windows-1251");
-var detectedEncoding = "";
-var hasHeaders = ref(true);
-var useAutoDetectEncoding = ref(true);
-var currentFile = null;
 
 onMounted(() => {});
 
@@ -27,7 +26,7 @@ var hotSettings = {
   colHeaders: true,
   rowHeaders: true,
   manualColumnResize: true,
-  manualColumnMove: true, // Активация возможности перемещения колонок  
+  manualColumnMove: true, // Активация возможности перемещения колонок
   renderAllRows: false,
   minRows: 10,
   startRows: 10,
@@ -69,13 +68,13 @@ var hotSettings = {
 const handleFileChange = (event) => {
   const file = event.target.files[0];
   if (file) {
-    currentFile = file;
+    settingsStore.currentFile = file;
     parseCSV(file);
   }
 };
 
 const onHandleCheckBoxHasHeaderChange = () => {
-  parseCSV(currentFile);
+  parseCSV(settingsStore.currentFile);
 };
 
 const parseCSV = async (file) => {
@@ -83,11 +82,11 @@ const parseCSV = async (file) => {
   if (file == null) return;
   const buffer = await readFileAsync(file);
   // Автоматическое определение кодировки
-  detectedEncoding = chardet.detect(buffer);
+  settingsStore.detectedEncoding = chardet.detect(buffer);
   // Выбор кодировки: автоматически или пользовательский выбор
-  const selectedEncoding2 = useAutoDetectEncoding.value
-    ? detectedEncoding
-    : selectedEncoding.value;
+  const selectedEncoding2 = settingsStore.useAutoDetectEncoding
+    ? settingsStore.detectedEncoding
+    : settingsStore.selectedEncoding.value;
   // Преобразование данных с использованием выбранной кодировки
   const text = new TextDecoder(selectedEncoding2).decode(buffer);
 
@@ -99,7 +98,7 @@ const parseCSV = async (file) => {
   const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
   csvData.value = jsonData.reduce((acc, row, index) => {
-  if (hasHeaders.value && index === 0) {
+  if (settingsStore.hasHeaders && index === 0) {
     return acc; // Пропускаем первую строку при включенном чекбоксе
   }
   const valuesArray = Object.values(row);
@@ -111,7 +110,7 @@ const parseCSV = async (file) => {
   // Обновляем колонки в hotSettings
   hotSettings.columns = jsonData[0].map((header, index) => ({
     data: index,
-    title: hasHeaders.value === true ? header : `Column ${index + 1}`,
+    title: settingsStore.hasHeaders === true ? header : `Column ${index + 1}`,
   }));
   hotSettings.minSpareRows = 0;
 
@@ -144,7 +143,7 @@ const saveCSV = () => {
   console.log(csvData);
   return;
 
-  const exportData = hasHeaders.value
+  const exportData = settingsStore.hasHeaders.value
     ? [hotSettings.columns.map((col) => col.title), ...csvData.value]
     : csvData.value;
 
@@ -169,7 +168,7 @@ const saveCSV = () => {
         <input
           type="checkbox"
           @change="onHandleCheckBoxHasHeaderChange"
-          v-model="hasHeaders"
+          v-model="settingsStore.hasHeaders"
         />
         У файла есть заголовки
       </label>
@@ -177,14 +176,14 @@ const saveCSV = () => {
         <input
           type="checkbox"
           @change="onHandleCheckBoxHasHeaderChange"
-          v-model="useAutoDetectEncoding"
+          v-model="settingsStore.useAutoDetectEncoding"
         />
         Автоопределение кодировки
       </label>
       <div class="col-100px">
         <select
-          :disabled="useAutoDetectEncoding"
-          v-model="selectedEncoding"
+          :disabled="settingsStore.useAutoDetectEncoding"
+          v-model="settingsStore.selectedEncoding"
           @change="onHandleCheckBoxHasHeaderChange"
         >
           <option value="UTF-8">UTF-8</option>
@@ -231,3 +230,4 @@ const saveCSV = () => {
   flex: 1;
 }
 </style>
+../astores/settingsStore
