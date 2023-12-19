@@ -1,19 +1,18 @@
 <script setup>
 import * as XLSX from "xlsx";
 import { HotTable } from "@handsontable/vue3";
-import { ContextMenu } from 'handsontable/plugins/contextMenu';
+import { ContextMenu } from "handsontable/plugins/contextMenu";
 import { registerAllModules } from "handsontable/registry";
 import { ref, onMounted } from "vue";
 import * as chardet from "chardet";
 import "handsontable/dist/handsontable.full.min.css";
-import {useSettingsStore} from "../stores/settingsStore";
-
+import { useSettingsStore } from "../stores/settingsStore";
 
 const settingsStore = useSettingsStore();
 
 registerAllModules();
 
-var csvData = ref([[null, null,null,null]]);
+var csvData = ref([[null, null, null, null]]);
 var hotCSV = ref(null);
 
 onMounted(() => {});
@@ -41,12 +40,12 @@ var hotSettings = {
       col_left: {
         name: "Вставить столбец (перед)",
         disabled: false,
-        callback(key, selection, clickEvent){
+        callback(key, selection, clickEvent) {
           csvData.value.forEach(function (row, rowIndex) {
             row.splice(selection[0].start.col, 0, null);
           });
-          hotSettings.columns.splice(selection[0].start.col,0,null);
-  }
+          hotSettings.columns.splice(selection[0].start.col, 0, null);
+        },
       },
       row_above: {
         name: "Вставить строку (перед)",
@@ -80,6 +79,7 @@ const onHandleCheckBoxHasHeaderChange = () => {
 const parseCSV = async (file) => {
   console.log("parseCSV");
   if (file == null) return;
+
   const buffer = await readFileAsync(file);
   // Автоматическое определение кодировки
   settingsStore.detectedEncoding = chardet.detect(buffer);
@@ -98,14 +98,13 @@ const parseCSV = async (file) => {
   const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
   csvData.value = jsonData.reduce((acc, row, index) => {
-  if (settingsStore.hasHeaders && index === 0) {
-    return acc; // Пропускаем первую строку при включенном чекбоксе
-  }
-  const valuesArray = Object.values(row);
-  acc.push(valuesArray);
-  return acc;
-}, []);
-
+    if (settingsStore.hasHeaders && index === 0) {
+      return acc; // Пропускаем первую строку при включенном чекбоксе
+    }
+    const valuesArray = Object.values(row);
+    acc.push(valuesArray);
+    return acc;
+  }, []);
 
   // Обновляем колонки в hotSettings
   hotSettings.columns = jsonData[0].map((header, index) => ({
