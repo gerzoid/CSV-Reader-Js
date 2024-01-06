@@ -41,10 +41,11 @@ var hotSettings = {
         name: "Вставить столбец (перед)",
         disabled: false,
         callback(key, selection, clickEvent) {
+          hotSettings.columns.splice(selection[0].start.col, 0, null);
+
           csvData.value.forEach(function (row, rowIndex) {
             row.splice(selection[0].start.col, 0, null);
           });
-          hotSettings.columns.splice(selection[0].start.col, 0, null);
         },
       },
       row_above: {
@@ -86,7 +87,8 @@ const parseCSV = async (file) => {
   // Выбор кодировки: автоматически или пользовательский выбор
   const selectedEncoding2 = settingsStore.useAutoDetectEncoding
     ? settingsStore.detectedEncoding
-    : settingsStore.selectedEncoding.value;
+    : settingsStore.selectedEncoding;
+
   // Преобразование данных с использованием выбранной кодировки
   const text = new TextDecoder(selectedEncoding2).decode(buffer);
 
@@ -96,15 +98,16 @@ const parseCSV = async (file) => {
 
   // Автоматическое определение кодировки
   const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
+console.log(jsonData);
   csvData.value = jsonData.reduce((acc, row, index) => {
     if (settingsStore.hasHeaders && index === 0) {
       return acc; // Пропускаем первую строку при включенном чекбоксе
     }
-    const valuesArray = Object.values(row);
-    acc.push(valuesArray);
+    acc.push(Array.from(row, (value, key) => value));
+    //acc.push(valuesArray);
     return acc;
   }, []);
+  console.log(csvData.value);
 
   // Обновляем колонки в hotSettings
   hotSettings.columns = jsonData[0].map((header, index) => ({
