@@ -41,7 +41,7 @@ var hotSettings = {
         name: "Вставить столбец (перед)",
         disabled: false,
         callback(key, selection, clickEvent) {
-          hotSettings.columns.splice(selection[0].start.col, 0, null);
+          hotSettings.columns.splice(selection[0].start.col, 0, {title:'Column'+(selection[0].start.col+1)});
 
           csvData.value.forEach(function (row, rowIndex) {
             row.splice(selection[0].start.col, 0, null);
@@ -98,20 +98,18 @@ const parseCSV = async (file) => {
 
   // Автоматическое определение кодировки
   const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-console.log(jsonData);
+
   csvData.value = jsonData.reduce((acc, row, index) => {
     if (settingsStore.hasHeaders && index === 0) {
       return acc; // Пропускаем первую строку при включенном чекбоксе
     }
     acc.push(Array.from(row, (value, key) => value));
-    //acc.push(valuesArray);
     return acc;
   }, []);
-  console.log(csvData.value);
 
   // Обновляем колонки в hotSettings
   hotSettings.columns = jsonData[0].map((header, index) => ({
-    data: index,
+    //data: index,
     title: settingsStore.hasHeaders === true ? header : `Column ${index + 1}`,
   }));
   hotSettings.minSpareRows = 0;
@@ -205,7 +203,7 @@ const saveCSV = () => {
         v-if="csvData.length > 0"
       ></hot-table>
     </div>
-    <button class="buttons col-100px" @click="saveCSV">Сохранить в CSV</button>
+<button class="buttons col-100px" @click="saveCSV">Сохранить в CSV</button>
   </div>
 </template>
 <style>
