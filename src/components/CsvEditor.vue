@@ -41,7 +41,9 @@ var hotSettings = {
         name: "Вставить столбец (перед)",
         disabled: false,
         callback(key, selection, clickEvent) {
-          hotSettings.columns.splice(selection[0].start.col, 0, {title:'Column'+(selection[0].start.col+1)});
+          hotSettings.columns.splice(selection[0].start.col, 0, {
+            title: "Column" + (selection[0].start.col + 1),
+          });
 
           csvData.value.forEach(function (row, rowIndex) {
             row.splice(selection[0].start.col, 0, null);
@@ -73,18 +75,41 @@ const handleFileChange = (event) => {
   }
 };
 
-const onHandleCheckBoxHasHeaderChange = () => {
-  parseCSV(settingsStore.currentFile);
+//Смена значения чекбокса - У файла есть заголовки
+const onHandleCheckBoxHasHeaderChange = (event) => {
+  //Копируем значение колонок в массив данных
+  if (!settingsStore.hasHeaders)
+    csvData.value.unshift(hotSettings.columns.map((column) => column.title));
+  
+    hotSettings.columns = csvData.value[0].map((header, index) => ({
+    title: settingsStore.hasHeaders === true ? header : `Column ${index + 1}`,
+  }));
+
+  if (settingsStore.hasHeaders) {
+    csvData.value = csvData.value.reduce((acc, row, index) => {
+      if (settingsStore.hasHeaders && index === 0) {
+        return acc; // Пропускаем первую строку при включенном чекбоксе
+      }
+      acc.push(Array.from(row, (value, key) => value));
+      return acc;
+    }, []);
+  }
+
+  if (hotCSV.value !== null) {
+    hotCSV.value.hotInstance.updateSettings(hotSettings);
+    hotCSV.value.hotInstance.updateData(csvData.value);
+  }
 };
 
+
 const parseCSV = async (file) => {
-  console.log("parseCSV");
+
   if (file == null) return;
 
   const buffer = await readFileAsync(file);
   // Автоматическое определение кодировки
   settingsStore.detectedEncoding = chardet.detect(buffer);
-  // Выбор кодировки: автоматически или пользовательский выбор
+
   const selectedEncoding2 = settingsStore.useAutoDetectEncoding
     ? settingsStore.detectedEncoding
     : settingsStore.selectedEncoding;
@@ -96,8 +121,7 @@ const parseCSV = async (file) => {
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
 
-  // Автоматическое определение кодировки
-  const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+  const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
 
   csvData.value = jsonData.reduce((acc, row, index) => {
     if (settingsStore.hasHeaders && index === 0) {
@@ -175,7 +199,6 @@ const saveCSV = () => {
       <label>
         <input
           type="checkbox"
-          @change="onHandleCheckBoxHasHeaderChange"
           v-model="settingsStore.useAutoDetectEncoding"
         />
         Автоопределение кодировки
@@ -184,7 +207,6 @@ const saveCSV = () => {
         <select
           :disabled="settingsStore.useAutoDetectEncoding"
           v-model="settingsStore.selectedEncoding"
-          @change="onHandleCheckBoxHasHeaderChange"
         >
           <option value="UTF-8">UTF-8</option>
           <option value="UTF-16">UTF-16</option>
@@ -203,7 +225,7 @@ const saveCSV = () => {
         v-if="csvData.length > 0"
       ></hot-table>
     </div>
-<button class="buttons col-100px" @click="saveCSV">Сохранить в CSV</button>
+    <button class="buttons col-100px" @click="saveCSV">Сохранить в CSV</button>
   </div>
 </template>
 <style>

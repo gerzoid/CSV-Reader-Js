@@ -5,7 +5,7 @@ export const useSettingsStore = defineStore('settingsStore', {
         loading: false,
         selectedEncoding:"Windows-1251",
         detectedEncoding:"",
-        hasHeaders:true,
+        hasHeaders:false,
         useAutoDetectEncoding: true,
         currentFile:null,
     }),
