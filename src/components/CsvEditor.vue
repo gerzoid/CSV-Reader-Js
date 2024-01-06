@@ -22,6 +22,7 @@ var hotSettings = {
   width: "100%",
   height: "100%",
   allowInsertColumn: true,
+  allowRemoveColumn: true,
   colHeaders: true,
   rowHeaders: true,
   manualColumnResize: true,
@@ -70,6 +71,13 @@ var hotSettings = {
       row_below: {
         name: "Вставить строку (после)",
       },
+      remove_row: {
+        name: "Удалить строку",
+      },
+      remove_col: {
+        name: "Удалить колонку",
+      },
+
       separator: ContextMenu.SEPARATOR,
       clear_custom: {
         name: "Очистить таблицу",
@@ -88,6 +96,13 @@ const handleFileChange = (event) => {
     parseCSV(file);
   }
 };
+
+const updateGrid=()=>{
+  if (hotCSV.value !== null) {
+    hotCSV.value.hotInstance.updateSettings(hotSettings);
+    hotCSV.value.hotInstance.updateData(csvData.value);
+  }
+}
 
 //Смена значения чекбокса - У файла есть заголовки
 const onHandleCheckBoxHasHeaderChange = (event) => {
@@ -152,11 +167,7 @@ const parseCSV = async (file) => {
   }));
   hotSettings.minSpareRows = 0;
 
-
-  if (hotCSV.value !== null) {
-    hotCSV.value.hotInstance.updateSettings(hotSettings);
-    hotCSV.value.hotInstance.updateData(csvData.value);
-  }
+  updateGrid();
 };
 
 const readFileAsync = (file) => {
@@ -267,4 +278,3 @@ const saveCSV = () => {
   flex: 1;
 }
 </style>
-../astores/settingsStore
