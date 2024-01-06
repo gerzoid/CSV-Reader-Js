@@ -50,6 +50,20 @@ var hotSettings = {
           });
         },
       },
+      col_right: {
+        name: "Вставить столбец (после)",
+        disabled: false,
+        callback(key, selection, clickEvent) {
+          var posColumn = selection[0].start.col + 1;
+          hotSettings.columns.splice(posColumn, 0, {
+            title: "Column" + (posColumn+1),
+          });
+          csvData.value.forEach(function (row, rowIndex) {
+            row.splice(posColumn, 0, null);
+          });
+        },
+      },
+
       row_above: {
         name: "Вставить строку (перед)",
       },
@@ -138,9 +152,10 @@ const parseCSV = async (file) => {
   }));
   hotSettings.minSpareRows = 0;
 
+
   if (hotCSV.value !== null) {
     hotCSV.value.hotInstance.updateSettings(hotSettings);
-    hotCSV.value.hotInstance.updateData(csvData);
+    hotCSV.value.hotInstance.updateData(csvData.value);
   }
 };
 
