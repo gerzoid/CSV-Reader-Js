@@ -88,7 +88,6 @@ var hotSettings = {
     },
   },
 };
-
 const handleFileChange = (event) => {
   const file = event.target.files[0];
   if (file) {
@@ -96,20 +95,17 @@ const handleFileChange = (event) => {
     parseCSV(file);
   }
 };
-
 const updateGrid=()=>{
   if (hotCSV.value !== null) {
     hotCSV.value.hotInstance.updateSettings(hotSettings);
     hotCSV.value.hotInstance.updateData(csvData.value);
   }
 }
-
 //Смена значения чекбокса - У файла есть заголовки
 const onHandleCheckBoxHasHeaderChange = (event) => {
   //Копируем значение колонок в массив данных
   if (!settingsStore.hasHeaders)
     csvData.value.unshift(hotSettings.columns.map((column) => column.title));
-  
     hotSettings.columns = csvData.value[0].map((header, index) => ({
     title: settingsStore.hasHeaders === true ? header : `Column ${index + 1}`,
   }));
@@ -129,8 +125,6 @@ const onHandleCheckBoxHasHeaderChange = (event) => {
     hotCSV.value.hotInstance.updateData(csvData.value);
   }
 };
-
-
 const parseCSV = async (file) => {
 
   if (file == null) return;
@@ -169,7 +163,6 @@ const parseCSV = async (file) => {
 
   updateGrid();
 };
-
 const readFileAsync = (file) => {
   console.log("readfileAsync");
   return new Promise((resolve, reject) => {
@@ -188,19 +181,19 @@ const readFileAsync = (file) => {
     reader.readAsArrayBuffer(file);
   });
 };
+const saveCSV = () => {  
 
-const saveCSV = () => {
-  console.log(csvData);
-  return;
+  const exportData = [...csvData.value];
+  if (settingsStore.hasHeaders)
+    exportData.unshift(hotSettings.columns.map((column) => column.title));
 
-  const exportData = settingsStore.hasHeaders.value
-    ? [hotSettings.columns.map((col) => col.title), ...csvData.value]
-    : csvData.value;
-
-  console.log(exportData);
-  console.log(csvData.value);
   const ws = XLSX.utils.json_to_sheet(exportData);
-  const csvData2 = XLSX.utils.sheet_to_csv(ws);
+  var csvData2 = XLSX.utils.sheet_to_csv(ws);
+
+  let index = csvData2.indexOf(String.fromCharCode(0x0A))
+  if (index !== -1) 
+    csvData2 = csvData2.substring(index + 1);
+
   const blob = new Blob([csvData2], { type: "text/csv;charset=Shift_JIS" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
