@@ -181,7 +181,7 @@ const readFileAsync = (file) => {
     reader.readAsArrayBuffer(file);
   });
 };
-const saveCSV = () => {  
+const saveCSV = () => {
 
   const exportData = [...csvData.value];
   if (settingsStore.hasHeaders)
@@ -191,7 +191,7 @@ const saveCSV = () => {
   var csvData2 = XLSX.utils.sheet_to_csv(ws);
 
   let index = csvData2.indexOf(String.fromCharCode(0x0A))
-  if (index !== -1) 
+  if (index !== -1)
     csvData2 = csvData2.substring(index + 1);
 
   const blob = new Blob([csvData2], { type: "text/csv;charset=Shift_JIS" });
@@ -205,7 +205,13 @@ const saveCSV = () => {
 </script>
 <template>
   <div class="container">
-    <input type="file" @change="handleFileChange" />
+    <div class="buttons-row">
+      <div id="customFileInput">
+        <label  class="buttons col-150px" for="fileInput">Открыть файл</label>
+        <input type="file" id="fileInput" @change="handleFileChange" style="display: none;" />
+      </div>
+      <button class="buttons col-150px" @click="saveCSV">Сохранить в CSV</button>
+  </div>
     <div class="row">
       <label>
         <input
@@ -244,7 +250,6 @@ const saveCSV = () => {
         v-if="csvData.length > 0"
       ></hot-table>
     </div>
-    <button class="buttons col-100px" @click="saveCSV">Сохранить в CSV</button>
   </div>
 </template>
 <style>
@@ -252,6 +257,10 @@ const saveCSV = () => {
   display: flex;
   flex-direction: column;
   width: 100%;
+}
+
+.buttons-row{
+  display: flex;
 }
 
 .file-input {
@@ -263,9 +272,17 @@ const saveCSV = () => {
   flex-direction: row;
   width: 100%;
 }
-
+#customFileInput{
+  display: flex;
+  text-align: center;
+}
 .col-100px {
   width: 100px;
+}
+.col-150px {
+  width: 140px;
+  padding:5px;
+  margin:10px;
 }
 .col {
   flex: 1;
